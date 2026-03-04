@@ -249,14 +249,14 @@ def health():
         max_tokens=256000,
         temperature=0.7,
         top_p=0.8,
-        extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": False}},
+        extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": True}},
     )
     csharp_hello, _, _ = _generate_from_messages(
         [{"role": "user", "content": "Write a hello world C# program."}],
         max_tokens=256000,
         temperature=0.7,
         top_p=0.8,
-        extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": False}},
+        extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": True}},
     )
     return {
         "status": "ok",

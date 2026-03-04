@@ -63,10 +63,10 @@ app.MapPost("/api/chat/send", async (
         history.Add(new ChatMessage("assistant", assistantReply));
 
         // Keep session bounded to prevent unlimited memory growth.
-        if (history.Count > 60)
-        {
-            history = history.Skip(history.Count - 60).ToList();
-        }
+        //if (history.Count > 60)
+        //{
+        //    history = history.Skip(history.Count - 60).ToList();
+        //}
 
         SaveChatHistory(context.Session, history);
         return Results.Ok(new ChatHistoryResponse(history));
