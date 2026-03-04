@@ -201,6 +201,9 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local model cache (Hugging Face)
+model_cache/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
