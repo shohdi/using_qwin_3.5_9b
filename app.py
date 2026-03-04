@@ -55,7 +55,7 @@ class Message(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str = Field(default=MODEL_ID)
     messages: List[Message]
-    max_tokens: Optional[int] = Field(default=512, ge=1, le=81920)
+    max_tokens: Optional[int] = Field(default=256000, ge=1, le=256000)
     temperature: Optional[float] = 1.0
     top_p: Optional[float] = 0.95
     stream: Optional[bool] = False
@@ -128,7 +128,7 @@ def _load_model():
             trust_remote_code=True,
             quantization_config=quant_cfg,
             device_map={"": 0},
-            dtype=torch.float16,
+            torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
             local_files_only=True,
         )
@@ -138,7 +138,7 @@ def _load_model():
             cache_dir=str(CACHE_DIR),
             trust_remote_code=True,
             device_map="cpu",
-            dtype=torch.float32,
+            torch_dtype=torch.float32,
             low_cpu_mem_usage=True,
             local_files_only=True,
         )
@@ -171,7 +171,7 @@ def _filter_generate_args(model, args: Dict[str, Any]) -> Dict[str, Any]:
 
 def _generate_from_messages(
     messages: List[Dict[str, str]],
-    max_tokens: int = 512,
+    max_tokens: int = 256000,
     temperature: float = 1.0,
     top_p: float = 0.95,
     extra_body: Optional[Dict[str, Any]] = None,
@@ -192,7 +192,7 @@ def _generate_from_messages(
         repetition_penalty = extra_body.get("repetition_penalty", repetition_penalty)
 
     do_sample = bool((temperature or 0.0) > 0.0)
-    safe_max_tokens = min(max_tokens, 2048) if torch.cuda.is_available() else min(max_tokens, 512)
+    safe_max_tokens = min(max_tokens, 256000) if torch.cuda.is_available() else min(max_tokens, 256000)
 
     generate_args = _filter_generate_args(
         model,
@@ -246,14 +246,14 @@ def list_models():
 def health():
     how_are_you, _, _ = _generate_from_messages(
         [{"role": "user", "content": "How are you?"}],
-        max_tokens=128,
+        max_tokens=256000,
         temperature=0.7,
         top_p=0.8,
         extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": False}},
     )
     csharp_hello, _, _ = _generate_from_messages(
         [{"role": "user", "content": "Write a hello world C# program."}],
-        max_tokens=256,
+        max_tokens=256000,
         temperature=0.7,
         top_p=0.8,
         extra_body={"top_k": 20, "chat_template_kwargs": {"enable_thinking": False}},
@@ -281,7 +281,7 @@ def chat_completions(req: ChatCompletionRequest):
     messages = _normalize_messages(req.messages)
     output_text, prompt_tokens, completion_tokens = _generate_from_messages(
         messages=messages,
-        max_tokens=req.max_tokens or 512,
+        max_tokens=req.max_tokens or 256000,
         temperature=req.temperature or 1.0,
         top_p=req.top_p or 0.95,
         extra_body=req.extra_body,
