@@ -9,6 +9,7 @@ public sealed class PythonApiClient(HttpClient httpClient)
         {
             model,
             messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray(),
+            // Intentionally omit max_tokens so the backend/model decides response length.
             stream = false
         };
 

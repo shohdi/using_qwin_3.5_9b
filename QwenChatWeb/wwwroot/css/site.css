@@ -109,8 +109,11 @@ body {
     border: 1px solid var(--border);
     padding: 12px 14px;
     line-height: 1.5;
-    white-space: pre-wrap;
     word-break: break-word;
+}
+
+.message-body {
+    white-space: pre-wrap;
 }
 
 .message.assistant {
@@ -121,6 +124,37 @@ body {
 .message.user {
     align-self: flex-end;
     background: var(--user);
+}
+
+.thinking-block {
+    margin-bottom: 8px;
+    border: 1px solid #cfd8e3;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.thinking-block summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.86rem;
+    color: #334155;
+    font-weight: 600;
+    padding: 8px 10px;
+    background: #edf2f7;
+}
+
+.thinking-block summary::-webkit-details-marker {
+    display: none;
+}
+
+.thinking-content {
+    font-size: 0.9rem;
+    color: #475569;
+    background: #f8fafc;
+    border-top: 1px solid #d8e0ea;
+    padding: 10px;
+    white-space: pre-wrap;
 }
 
 .composer {
