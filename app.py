@@ -25,8 +25,6 @@ os.environ.setdefault("HF_HOME", str(CACHE_DIR))
 os.environ.setdefault("HF_HUB_CACHE", str(CACHE_DIR))
 os.environ.setdefault("TRANSFORMERS_CACHE", str(CACHE_DIR))
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-os.environ.setdefault("HF_HUB_OFFLINE", "1")
-os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 _tokenizer = None
 _model = None
@@ -96,11 +94,18 @@ def _load_model():
             cache_dir=str(CACHE_DIR),
             local_files_only=True,
         )
-    except LocalEntryNotFoundError as exc:
-        raise RuntimeError(
-            f"Model '{MODEL_ID}' is not available in local cache '{CACHE_DIR}'. "
-            "Connect to the internet once to warm the cache, then retry offline."
-        ) from exc
+    except LocalEntryNotFoundError:
+        try:
+            model_source = snapshot_download(
+                repo_id=MODEL_ID,
+                cache_dir=str(CACHE_DIR),
+                local_files_only=False,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Model '{MODEL_ID}' was not found in local cache '{CACHE_DIR}' and download failed. "
+                "Connect to the internet to download it once, then it can run offline from cache."
+            ) from exc
 
     _tokenizer = AutoTokenizer.from_pretrained(
         model_source,
