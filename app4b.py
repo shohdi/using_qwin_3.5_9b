@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import torch
 from fastapi import FastAPI, HTTPException
+from huggingface_hub import snapshot_download
+from huggingface_hub.errors import LocalEntryNotFoundError
 from pydantic import BaseModel, Field
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from transformers.models.auto.configuration_auto import CONFIG_MAPPING_NAMES
@@ -23,6 +25,8 @@ os.environ.setdefault("HF_HOME", str(CACHE_DIR))
 os.environ.setdefault("HF_HUB_CACHE", str(CACHE_DIR))
 os.environ.setdefault("TRANSFORMERS_CACHE", str(CACHE_DIR))
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 
 _tokenizer = None
 _model = None
@@ -84,10 +88,26 @@ def _load_model():
         return _tokenizer, _model
 
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    model_source: Union[str, Path]
+    try:
+        model_source = snapshot_download(
+            repo_id=MODEL_ID,
+            cache_dir=str(CACHE_DIR),
+            local_files_only=True,
+        )
+    except LocalEntryNotFoundError as exc:
+        raise RuntimeError(
+            f"Model '{MODEL_ID}' is not available in local cache '{CACHE_DIR}'. "
+            "Connect to the internet once to warm the cache, then retry offline."
+        ) from exc
+
     _tokenizer = AutoTokenizer.from_pretrained(
-        MODEL_ID,
+        model_source,
         cache_dir=str(CACHE_DIR),
         trust_remote_code=True,
+        local_files_only=True,
+        use_fast=False,
     )
 
     if torch.cuda.is_available():
@@ -98,22 +118,24 @@ def _load_model():
             bnb_4bit_compute_dtype=torch.float16,
         )
         _model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
+            model_source,
             cache_dir=str(CACHE_DIR),
             trust_remote_code=True,
             quantization_config=quant_cfg,
             device_map={"": 0},
             dtype=torch.float16,
             low_cpu_mem_usage=True,
+            local_files_only=True,
         )
     else:
         _model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
+            model_source,
             cache_dir=str(CACHE_DIR),
             trust_remote_code=True,
             device_map="cpu",
             dtype=torch.float32,
             low_cpu_mem_usage=True,
+            local_files_only=True,
         )
 
     _model.eval()
