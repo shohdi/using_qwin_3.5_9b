@@ -1,4 +1,5 @@
 import inspect
+import argparse
 import os
 import sys
 import time
@@ -285,4 +286,9 @@ def chat_completions(req: ChatCompletionRequest):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=False)
+    parser = argparse.ArgumentParser(description="Run local OpenAI-compatible Qwen API server.")
+    parser.add_argument("--host", default="0.0.0.0", help="Host interface to bind.")
+    parser.add_argument("--port", type=int, default=8001, help="Port to bind. Default: 8001.")
+    args = parser.parse_args()
+
+    uvicorn.run("app:app", host=args.host, port=args.port, reload=False)
