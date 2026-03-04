@@ -123,7 +123,7 @@ def _load_model():
             trust_remote_code=True,
             quantization_config=quant_cfg,
             device_map={"": 0},
-            dtype=torch.float16,
+            torch_dtype=torch.float16,
             low_cpu_mem_usage=True,
             local_files_only=True,
         )
@@ -133,7 +133,7 @@ def _load_model():
             cache_dir=str(CACHE_DIR),
             trust_remote_code=True,
             device_map="cpu",
-            dtype=torch.float32,
+            torch_dtype=torch.float32,
             low_cpu_mem_usage=True,
             local_files_only=True,
         )
@@ -313,4 +313,4 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=8001, help="Port to bind. Default: 8001.")
     args = parser.parse_args()
 
-    uvicorn.run("app:app", host=args.host, port=args.port, reload=False)
+    uvicorn.run("app4b:app", host=args.host, port=args.port, reload=False)
