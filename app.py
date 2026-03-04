@@ -275,8 +275,8 @@ def chat_completions(req: ChatCompletionRequest):
     if req.stream:
         raise HTTPException(status_code=400, detail="stream=true is not implemented in this local server")
 
-    if req.model != MODEL_ID:
-        raise HTTPException(status_code=400, detail=f"Only model '{MODEL_ID}' is served by this API")
+    #if req.model != MODEL_ID:
+    #    raise HTTPException(status_code=400, detail=f"Only model '{MODEL_ID}' is served by this API")
 
     messages = _normalize_messages(req.messages)
     output_text, prompt_tokens, completion_tokens = _generate_from_messages(
